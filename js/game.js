@@ -1,3 +1,4 @@
+// Основной класс игры с системой уровней
 class Minesweeper {
     constructor() {
         this.rows = 10;
@@ -13,35 +14,13 @@ class Minesweeper {
         this.timer = 0;
         this.timerInterval = null;
         
-        // Система очков и способностей (хранятся в переменных)
-        this.score = 0;
-        this.bestScore = 0;
-        this.abilities = {
-            scanner: {
-                name: "Сканер",
-                icon: "🔍",
-                cost: 50,
-                uses: 1,
-                maxUses: 1,
-                description: "Показывает 3 ближайшие мины"
-            },
-            shield: {
-                name: "Щит",
-                icon: "🛡️",
-                cost: 100,
-                uses: 1,
-                maxUses: 1,
-                description: "Защита от взрыва"
-            },
-            hint: {
-                name: "Подсказка",
-                icon: "💡",
-                cost: 30,
-                uses: 3,
-                maxUses: 3,
-                description: "Показывает безопасную клетку"
-            }
-        };
+        // Инициализация системы данных
+        this.gameData = new GameData();
+        this.levelSystem = new LevelSystem(this.gameData);
+        this.userData = this.gameData.getUserData();
+        
+        // Получаем разблокированные способности
+        this.unlockedAbilities = this.levelSystem.getUnlockedAbilities();
         
         this.boardElement = document.getElementById('board');
         this.resetButton = document.getElementById('resetButton');
@@ -50,10 +29,12 @@ class Minesweeper {
         this.scoreElement = document.getElementById('scoreValue');
         this.bestScoreElement = document.getElementById('bestScoreValue');
         this.abilitiesPanel = document.getElementById('abilitiesPanel');
+        this.levelInfoElement = document.getElementById('levelInfo');
         
         this.resetButton.addEventListener('click', () => this.resetGame());
         this.initializeGame();
         this.updateScoreDisplay();
+        this.updateLevelInfo();
     }
     
     initializeGame() {
@@ -75,11 +56,6 @@ class Minesweeper {
         this.timerElement.textContent = '000';
         this.resetButton.textContent = '😊';
         
-        // Сброс способностей
-        this.abilities.scanner.uses = this.abilities.scanner.maxUses;
-        this.abilities.shield.uses = this.abilities.shield.maxUses;
-        this.abilities.hint.uses = this.abilities.hint.maxUses;
-        
         this.boardElement.innerHTML = '';
         this.abilitiesPanel.innerHTML = '';
         
@@ -92,7 +68,6 @@ class Minesweeper {
                 cell.dataset.row = i;
                 cell.dataset.col = j;
                 
-                // Используем touch события для лучшей совместимости с мобильными устройствами
                 cell.addEventListener('click', (e) => this.handleCellClick(e));
                 cell.addEventListener('contextmenu', (e) => this.handleRightClick(e));
                 
@@ -102,7 +77,7 @@ class Minesweeper {
                     pressTimer = setTimeout(() => {
                         e.preventDefault();
                         this.handleRightClick(e);
-                    }, 500); // 500ms для долгого нажатия
+                    }, 500);
                 });
                 
                 cell.addEventListener('touchend', () => {
@@ -129,43 +104,45 @@ class Minesweeper {
     }
     
     createAbilitiesPanel() {
-        for (const [key, ability] of Object.entries(this.abilities)) {
+        this.unlockedAbilities = this.levelSystem.getUnlockedAbilities();
+        
+        this.unlockedAbilities.forEach(ability => {
             const abilityElement = document.createElement('div');
             abilityElement.className = 'ability';
-            abilityElement.id = `ability-${key}`;
+            abilityElement.id = `ability-${ability.key}`;
             abilityElement.innerHTML = `
                 <div class="ability-icon">${ability.icon}</div>
                 <div class="ability-name">${ability.name}</div>
-                <div class="ability-cost">${ability.cost} очков</div>
-                <div class="ability-uses">Использований: ${ability.uses}/${ability.maxUses}</div>
+                <div class="ability-level">Ур. ${ability.level}</div>
+                <div class="ability-uses">Исп.: ${ability.uses}</div>
             `;
             
-            abilityElement.addEventListener('click', () => this.useAbility(key));
+            abilityElement.addEventListener('click', () => this.useAbility(ability.key));
             this.abilitiesPanel.appendChild(abilityElement);
-        }
+        });
         
         this.updateAbilitiesPanel();
     }
     
     updateAbilitiesPanel() {
-        for (const [key, ability] of Object.entries(this.abilities)) {
-            const abilityElement = document.getElementById(`ability-${key}`);
-            const usesElement = abilityElement.querySelector('.ability-uses');
-            usesElement.textContent = `Использований: ${ability.uses}/${ability.maxUses}`;
-            
-            // Обновляем состояние способности
-            abilityElement.classList.remove('disabled');
-            if (ability.uses <= 0 || this.score < ability.cost || this.gameOver || this.gameWon) {
-                abilityElement.classList.add('disabled');
+        this.unlockedAbilities.forEach(ability => {
+            const abilityElement = document.getElementById(`ability-${ability.key}`);
+            if (abilityElement) {
+                const usesElement = abilityElement.querySelector('.ability-uses');
+                usesElement.textContent = `Исп.: ${ability.uses}`;
+                
+                abilityElement.classList.remove('disabled');
+                if (ability.uses <= 0 || this.gameOver || this.gameWon) {
+                    abilityElement.classList.add('disabled');
+                }
             }
-        }
+        });
     }
     
     useAbility(abilityKey) {
-        const ability = this.abilities[abilityKey];
-        
-        if (ability.uses <= 0 || this.score < ability.cost || this.gameOver || this.gameWon) {
-            this.showMessage("Недостаточно очков или использований!");
+        const ability = this.unlockedAbilities.find(a => a.key === abilityKey);
+        if (!ability || ability.uses <= 0 || this.gameOver || this.gameWon) {
+            this.showMessage("Способность недоступна!");
             return;
         }
         
@@ -174,28 +151,32 @@ class Minesweeper {
                 this.useScanner();
                 break;
             case 'shield':
-                // Щит активируется автоматически при попадании на мину
-                this.showMessage("Щит активирован! Следующая мина не взорвёт вас.");
-                break;
+                this.showMessage("Щит активируется автоматически при взрыве!");
+                return;
             case 'hint':
                 this.useHint();
                 break;
+            case 'telepathy':
+                this.useTelepathy();
+                break;
+            case 'timeShield':
+                this.useTimeShield();
+                break;
+            case 'magnetism':
+                this.useMagnetism();
+                break;
         }
         
-        if (abilityKey !== 'shield') {
-            ability.uses--;
-            this.score -= ability.cost;
-            this.updateScoreDisplay();
-            this.updateAbilitiesPanel();
-        }
+        // Уменьшаем количество использований
+        this.userData.abilities[abilityKey].uses--;
+        this.gameData.updateUserData(this.userData);
+        this.updateAbilitiesPanel();
     }
     
     useScanner() {
-        // Находим все мины и показываем 3 ближайшие
         const mines = this.mines;
         if (mines.length === 0) return;
         
-        // Показываем 3 ближайшие мины
         const shownMines = mines.slice(0, Math.min(3, mines.length));
         
         shownMines.forEach(mine => {
@@ -203,7 +184,6 @@ class Minesweeper {
             cell.classList.add('scanner-highlight');
         });
         
-        // Убираем подсветку через 3 секунды
         setTimeout(() => {
             shownMines.forEach(mine => {
                 const cell = this.board[mine.row][mine.col].element;
@@ -215,14 +195,12 @@ class Minesweeper {
     }
     
     useHint() {
-        // Находим все безопасные клетки рядом с открытыми
         const safeCells = [];
         
         for (let i = 0; i < this.rows; i++) {
             for (let j = 0; j < this.cols; j++) {
                 const cell = this.board[i][j];
                 if (!cell.isRevealed && !cell.isMine && !cell.isFlagged) {
-                    // Проверяем, есть ли рядом открытые клетки
                     let hasRevealedNeighbor = false;
                     for (let di = -1; di <= 1; di++) {
                         for (let dj = -1; dj <= 1; dj++) {
@@ -244,14 +222,12 @@ class Minesweeper {
         }
         
         if (safeCells.length > 0) {
-            // Выбираем случайную безопасную клетку
             const randomIndex = Math.floor(Math.random() * safeCells.length);
             const hintCell = safeCells[randomIndex];
             const cellElement = this.board[hintCell.row][hintCell.col].element;
             
             cellElement.classList.add('highlighted');
             
-            // Убираем подсветку через 2 секунды
             setTimeout(() => {
                 cellElement.classList.remove('highlighted');
             }, 2000);
@@ -259,6 +235,56 @@ class Minesweeper {
             this.showMessage("Подсказка показывает безопасную клетку!");
         } else {
             this.showMessage("Нет доступных подсказок!");
+        }
+    }
+    
+    useTelepathy() {
+        this.mines.forEach(mine => {
+            const cell = this.board[mine.row][mine.col].element;
+            cell.classList.add('scanner-highlight');
+        });
+        
+        setTimeout(() => {
+            this.mines.forEach(mine => {
+                const cell = this.board[mine.row][mine.col].element;
+                cell.classList.remove('scanner-highlight');
+            });
+        }, 5000);
+        
+        this.showMessage("Телепатия показывает все мины!");
+    }
+    
+    useTimeShield() {
+        this.showMessage("Время замедлено!");
+        // Визуальный эффект замедления
+        document.body.style.animation = 'slowMotion 10s infinite';
+    }
+    
+    useMagnetism() {
+        const safeCells = [];
+        
+        for (let i = 0; i < this.rows; i++) {
+            for (let j = 0; j < this.cols; j++) {
+                const cell = this.board[i][j];
+                if (!cell.isRevealed && !cell.isMine && !cell.isFlagged) {
+                    safeCells.push({row: i, col: j});
+                }
+            }
+        }
+        
+        // Открываем 3 случайные безопасные клетки
+        for (let i = 0; i < Math.min(3, safeCells.length); i++) {
+            const randomIndex = Math.floor(Math.random() * safeCells.length);
+            const cellToReveal = safeCells[randomIndex];
+            this.revealCell(cellToReveal.row, cellToReveal.col);
+            safeCells.splice(randomIndex, 1);
+        }
+        
+        this.showMessage("Магнетизм открыл 3 безопасные клетки!");
+        
+        // Проверяем победу
+        if (this.revealedCount === (this.rows * this.cols - this.minesCount)) {
+            this.endGame(true);
         }
     }
     
@@ -276,7 +302,6 @@ class Minesweeper {
             const row = Math.floor(Math.random() * this.rows);
             const col = Math.floor(Math.random() * this.cols);
             
-            // Не ставим мину на первую клетку и если там уже есть мина
             if ((row === excludeRow && col === excludeCol) || this.board[row][col].isMine) {
                 continue;
             }
@@ -285,7 +310,6 @@ class Minesweeper {
             this.mines.push({row, col});
             minesPlaced++;
             
-            // Обновляем счетчики соседей
             this.updateNeighbors(row, col);
         }
     }
@@ -308,7 +332,6 @@ class Minesweeper {
     }
     
     handleCellClick(event) {
-        // Предотвращаем контекстное меню на мобильных устройствах
         event.preventDefault();
         
         if (this.gameOver || this.gameWon) return;
@@ -319,7 +342,6 @@ class Minesweeper {
         
         if (cell.isRevealed || cell.isFlagged) return;
         
-        // При первом клике размещаем мины
         if (this.firstClick) {
             this.firstClick = false;
             this.placeMines(row, col);
@@ -328,8 +350,10 @@ class Minesweeper {
         
         if (cell.isMine) {
             // Проверяем, активен ли щит
-            if (this.abilities.shield.uses > 0) {
-                this.abilities.shield.uses--;
+            const shieldAbility = this.userData.abilities.shield;
+            if (shieldAbility && shieldAbility.uses > 0) {
+                this.userData.abilities.shield.uses--;
+                this.gameData.updateUserData(this.userData);
                 cell.element.classList.add('shield-protected');
                 this.showMessage("Щит спас вас от взрыва!");
                 this.updateAbilitiesPanel();
@@ -343,14 +367,12 @@ class Minesweeper {
         
         this.revealCell(row, col);
         
-        // Проверяем победу
         if (this.revealedCount === (this.rows * this.cols - this.minesCount)) {
             this.endGame(true);
         }
     }
     
     handleRightClick(event) {
-        // Предотвращаем стандартное контекстное меню
         event.preventDefault();
         event.stopPropagation();
         
@@ -388,7 +410,6 @@ class Minesweeper {
             cell.element.textContent = cell.neighborMines;
             cell.element.classList.add(`number-${cell.neighborMines}`);
         } else {
-            // Рекурсивно открываем соседние пустые клетки
             for (let i = -1; i <= 1; i++) {
                 for (let j = -1; j <= 1; j++) {
                     const newRow = row + i;
@@ -422,20 +443,22 @@ class Minesweeper {
         
         this.resetButton.textContent = isWin ? '😎' : '😵';
         
-        // Начисляем очки за победу
+        let points = 0;
         if (isWin) {
-            const points = Math.max(10, 200 - this.timer);
-            this.score += points;
-            if (this.score > this.bestScore) {
-                this.bestScore = this.score;
-            }
+            points = Math.max(10, 200 - this.timer);
             this.showMessage(`Победа! +${points} очков!`);
         }
         
+        // Обновляем статистику
+        this.levelSystem.updateStats(isWin, this.timer, points, this.revealedCount);
+        
+        this.userData.totalScore += points;
+        this.gameData.updateUserData(this.userData);
+        
         this.updateScoreDisplay();
+        this.updateLevelInfo();
         this.updateAbilitiesPanel();
         
-        // Показываем сообщение о завершении игры
         setTimeout(() => {
             const gameOverDiv = document.createElement('div');
             gameOverDiv.className = 'game-over';
@@ -452,9 +475,16 @@ class Minesweeper {
             timeText.style.margin = '10px 0';
             
             const scoreText = document.createElement('p');
-            scoreText.innerHTML = `Очки: <strong>${this.score}</strong><br>Рекорд: <strong>${this.bestScore}</strong>`;
+            scoreText.innerHTML = `Очки: <strong>${points}</strong><br>Всего: <strong>${this.userData.totalScore}</strong>`;
             scoreText.style.fontSize = '16px';
             scoreText.style.margin = '10px 0';
+            
+            const levelUpInfo = document.createElement('p');
+            const levelInfo = this.levelSystem.getLevelInfo();
+            levelUpInfo.innerHTML = `Уровень: <strong>${levelInfo.currentLevel}</strong><br>
+                                   XP: <strong>${levelInfo.currentXP}/${levelInfo.xpToNextLevel}</strong>`;
+            levelUpInfo.style.fontSize = '14px';
+            levelUpInfo.style.margin = '10px 0';
             
             const resetButton = document.createElement('button');
             resetButton.textContent = 'Новая игра';
@@ -466,6 +496,7 @@ class Minesweeper {
             contentDiv.appendChild(title);
             contentDiv.appendChild(timeText);
             contentDiv.appendChild(scoreText);
+            contentDiv.appendChild(levelUpInfo);
             contentDiv.appendChild(resetButton);
             gameOverDiv.appendChild(contentDiv);
             document.body.appendChild(gameOverDiv);
@@ -478,16 +509,27 @@ class Minesweeper {
     }
     
     updateScoreDisplay() {
-        this.scoreElement.textContent = this.score;
-        this.bestScoreElement.textContent = this.bestScore;
+        this.scoreElement.textContent = this.userData.totalScore;
+        this.bestScoreElement.textContent = this.userData.bestTime || '0';
+    }
+    
+    updateLevelInfo() {
+        const levelInfo = this.levelSystem.getLevelInfo();
+        if (this.levelInfoElement) {
+            this.levelInfoElement.innerHTML = `
+                <div>Уровень: ${levelInfo.currentLevel}</div>
+                <div>XP: ${levelInfo.currentXP}/${levelInfo.xpToNextLevel}</div>
+                <div style="width:100%;background:#444;height:5px;margin:5px 0">
+                    <div style="width:${levelInfo.progress}%;background:#4CAF50;height:100%"></div>
+                </div>
+            `;
+        }
     }
     
     showMessage(text) {
-        // Удаляем предыдущие сообщения
         const existingMessages = document.querySelectorAll('.message');
         existingMessages.forEach(msg => msg.remove());
         
-        // Создаем новое сообщение
         const message = document.createElement('div');
         message.className = 'message';
         message.textContent = text;

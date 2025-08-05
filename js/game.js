@@ -68,25 +68,14 @@ class Minesweeper {
                 cell.dataset.row = i;
                 cell.dataset.col = j;
                 
+                // Основной клик для открытия клетки
                 cell.addEventListener('click', (e) => this.handleCellClick(e));
+                
+                // Контекстное меню для флагов (работает на десктопе)
                 cell.addEventListener('contextmenu', (e) => this.handleRightClick(e));
                 
-                // Добавляем обработку долгого нажатия для мобильных устройств
-                let pressTimer;
-                cell.addEventListener('touchstart', (e) => {
-                    pressTimer = setTimeout(() => {
-                        e.preventDefault();
-                        this.handleRightClick(e);
-                    }, 500);
-                });
-                
-                cell.addEventListener('touchend', () => {
-                    clearTimeout(pressTimer);
-                });
-                
-                cell.addEventListener('touchmove', () => {
-                    clearTimeout(pressTimer);
-                });
+                // Долгое нажатие для мобильных устройств
+                this.addMobileLongPress(cell);
                 
                 this.boardElement.appendChild(cell);
                 this.board[i][j] = {
@@ -103,30 +92,56 @@ class Minesweeper {
         this.createAbilitiesPanel();
     }
     
-    // В методе createAbilitiesPanel() замените код на следующий:
-
-createAbilitiesPanel() {
-    this.unlockedAbilities = this.levelSystem.getUnlockedAbilities();
-    
-    this.abilitiesPanel.innerHTML = ''; // Очищаем панель способностей
-    
-    this.unlockedAbilities.forEach(ability => {
-        const abilityElement = document.createElement('div');
-        abilityElement.className = 'ability';
-        abilityElement.id = `ability-${ability.key}`;
-        abilityElement.innerHTML = `
-            <div class="ability-icon">${ability.icon}</div>
-            <div class="ability-name">${ability.name}</div>
-            <div class="ability-level">Ур. ${ability.level}</div>
-            <div class="ability-uses">Исп.: ${ability.uses}</div>
-        `;
+    // Добавляем обработку долгого нажатия для мобильных устройств
+    addMobileLongPress(element) {
+        let pressTimer;
         
-        abilityElement.addEventListener('click', () => this.useAbility(ability.key));
-        this.abilitiesPanel.appendChild(abilityElement);
-    });
+        element.addEventListener('touchstart', (e) => {
+            pressTimer = setTimeout(() => {
+                e.preventDefault();
+                this.handleRightClick(e);
+            }, 500); // 500ms для долгого нажатия
+        });
+        
+        element.addEventListener('touchend', () => {
+            clearTimeout(pressTimer);
+        });
+        
+        element.addEventListener('touchmove', () => {
+            clearTimeout(pressTimer);
+        });
+        
+        // Для десктопа также добавляем правый клик
+        element.addEventListener('mousedown', (e) => {
+            if (e.button === 2) { // Правая кнопка мыши
+                e.preventDefault();
+                this.handleRightClick(e);
+            }
+        });
+    }
     
-    this.updateAbilitiesPanel();
-}
+    createAbilitiesPanel() {
+        this.unlockedAbilities = this.levelSystem.getUnlockedAbilities();
+        
+        this.abilitiesPanel.innerHTML = '';
+        
+        this.unlockedAbilities.forEach(ability => {
+            const abilityElement = document.createElement('div');
+            abilityElement.className = 'ability';
+            abilityElement.id = `ability-${ability.key}`;
+            abilityElement.innerHTML = `
+                <div class="ability-icon">${ability.icon}</div>
+                <div class="ability-name">${ability.name}</div>
+                <div class="ability-level">Ур. ${ability.level}</div>
+                <div class="ability-uses">Исп.: ${ability.uses}</div>
+            `;
+            
+            abilityElement.addEventListener('click', () => this.useAbility(ability.key));
+            this.abilitiesPanel.appendChild(abilityElement);
+        });
+        
+        this.updateAbilitiesPanel();
+    }
     
     updateAbilitiesPanel() {
         this.unlockedAbilities.forEach(ability => {
@@ -376,31 +391,44 @@ createAbilitiesPanel() {
         }
     }
     
-    // В методе handleRightClick() добавьте проверку event.preventDefault()
-handleRightClick(event) {
-    event.preventDefault();
-    event.stopPropagation();
-
-    if (this.gameOver || this.gameWon) return;
-
-    const row = parseInt(event.target.dataset.row);
-    const col = parseInt(event.target.dataset.col);
-    const cell = this.board[row][col];
-
-    if (cell.isRevealed) return;
-
-    if (cell.isFlagged) {
-        cell.isFlagged = false;
-        cell.element.classList.remove('flagged');
-        this.flagsCount--;
-    } else {
-        cell.isFlagged = true;
-        cell.element.classList.add('flagged');
-        this.flagsCount++;
+    handleRightClick(event) {
+        event.preventDefault();
+        event.stopPropagation();
+        
+        if (this.gameOver || this.gameWon) return;
+        
+        // Для touch событий нужно получить координаты правильно
+        let target = event.target;
+        if (event.touches) {
+            const touch = event.touches[0];
+            target = document.elementFromPoint(touch.clientX, touch.clientY);
+        }
+        
+        // Ищем родительскую ячейку
+        while (target && !target.dataset.row) {
+            target = target.parentElement;
+        }
+        
+        if (!target || !target.dataset.row) return;
+        
+        const row = parseInt(target.dataset.row);
+        const col = parseInt(target.dataset.col);
+        const cell = this.board[row][col];
+        
+        if (cell.isRevealed) return;
+        
+        if (cell.isFlagged) {
+            cell.isFlagged = false;
+            cell.element.classList.remove('flagged');
+            this.flagsCount--;
+        } else {
+            cell.isFlagged = true;
+            cell.element.classList.add('flagged');
+            this.flagsCount++;
+        }
+        
+        this.updateMinesCounter();
     }
-
-    this.updateMinesCounter();
-}
     
     revealCell(row, col) {
         const cell = this.board[row][col];
@@ -522,10 +550,10 @@ handleRightClick(event) {
         const levelInfo = this.levelSystem.getLevelInfo();
         if (this.levelInfoElement) {
             this.levelInfoElement.innerHTML = `
-                <div>Уровень: ${levelInfo.currentLevel}</div>
-                <div>XP: ${levelInfo.currentXP}/${levelInfo.xpToNextLevel}</div>
-                <div style="width:100%;background:#444;height:5px;margin:5px 0">
-                    <div style="width:${levelInfo.progress}%;background:#4CAF50;height:100%"></div>
+                <div><strong>Уровень:</strong> ${levelInfo.currentLevel}</div>
+                <div><strong>XP:</strong> ${levelInfo.currentXP}/${levelInfo.xpToNextLevel}</div>
+                <div style="width:100%;background:#444;height:6px;margin:8px 0;border-radius:3px;overflow:hidden">
+                    <div style="width:${levelInfo.progress}%;background:linear-gradient(90deg, #4CAF50, #8BC34A);height:100%;transition:width 0.3s ease"></div>
                 </div>
             `;
         }

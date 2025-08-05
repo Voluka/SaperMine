@@ -376,30 +376,31 @@ createAbilitiesPanel() {
         }
     }
     
-    handleRightClick(event) {
-        event.preventDefault();
-        event.stopPropagation();
-        
-        if (this.gameOver || this.gameWon) return;
-        
-        const row = parseInt(event.target.dataset.row);
-        const col = parseInt(event.target.dataset.col);
-        const cell = this.board[row][col];
-        
-        if (cell.isRevealed) return;
-        
-        if (cell.isFlagged) {
-            cell.isFlagged = false;
-            cell.element.classList.remove('flagged');
-            this.flagsCount--;
-        } else {
-            cell.isFlagged = true;
-            cell.element.classList.add('flagged');
-            this.flagsCount++;
-        }
-        
-        this.updateMinesCounter();
+    // В методе handleRightClick() добавьте проверку event.preventDefault()
+handleRightClick(event) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (this.gameOver || this.gameWon) return;
+
+    const row = parseInt(event.target.dataset.row);
+    const col = parseInt(event.target.dataset.col);
+    const cell = this.board[row][col];
+
+    if (cell.isRevealed) return;
+
+    if (cell.isFlagged) {
+        cell.isFlagged = false;
+        cell.element.classList.remove('flagged');
+        this.flagsCount--;
+    } else {
+        cell.isFlagged = true;
+        cell.element.classList.add('flagged');
+        this.flagsCount++;
     }
+
+    this.updateMinesCounter();
+}
     
     revealCell(row, col) {
         const cell = this.board[row][col];

@@ -429,3 +429,60 @@ body {
     font-size: 10px;
     color: #4d9eff;
 }
+/* Добавьте эти стили в конец файла css/style.css */
+
+.abilities-panel {
+    display: flex;
+    justify-content: space-around;
+    gap: 10px;
+    margin: 15px 0;
+}
+
+.ability {
+    background: rgba(40, 40, 60, 0.8);
+    border: 2px solid #5a5a7a;
+    border-radius: 10px;
+    padding: 10px 5px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    max-width: 150px; /* Ограничиваем максимальную ширину */
+}
+
+.ability:hover:not(.disabled) {
+    background: rgba(60, 60, 90, 0.9);
+    border-color: #7a7aaa;
+}
+
+.ability.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.ability-icon {
+    font-size: 20px;
+    margin-bottom: 3px;
+}
+
+.ability-name {
+    font-size: 11px;
+    margin-bottom: 3px;
+    font-weight: bold;
+}
+
+.ability-level {
+    font-size: 10px;
+    color: #FFD700;
+    margin: 2px 0;
+}
+
+.ability-uses {
+    font-size: 10px;
+    color: #4d9eff;
+}

@@ -362,127 +362,108 @@ body {
     }
 }
 
-/* Добавьте эти стили в конец файла css/style.css */
+/* === Стили для системы уровней (добавить в конец файла) === */
 
 .level-info {
-    background: rgba(40, 40, 60, 0.8);
+    background: rgba(40, 40, 60, 0.9);
     border: 2px solid #5a5a7a;
     border-radius: 10px;
-    padding: 10px;
+    padding: 12px;
     margin: 15px 0;
     text-align: center;
     font-size: 14px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
 .level-info div {
-    margin: 2px 0;
+    margin: 3px 0;
+    color: #e0e0e0;
 }
 
-.ability-level {
-    font-size: 10px;
-    color: #FFD700;
-    margin: 2px 0;
-}
-
-.ability {
-    background: rgba(40, 40, 60, 0.8);
-    border: 2px solid #5a5a7a;
-    border-radius: 10px;
-    padding: 10px 5px;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-}
-
-.ability:hover:not(.disabled) {
-    background: rgba(60, 60, 90, 0.9);
-    border-color: #7a7aaa;
-}
-
-.ability.disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-.ability-icon {
-    font-size: 20px;
-    margin-bottom: 3px;
-}
-
-.ability-name {
-    font-size: 11px;
-    margin-bottom: 3px;
-    font-weight: bold;
-}
-
-.ability-cost {
-    font-size: 10px;
+.level-info strong {
     color: #FFD700;
 }
-
-.ability-uses {
-    font-size: 10px;
-    color: #4d9eff;
-}
-/* Добавьте эти стили в конец файла css/style.css */
 
 .abilities-panel {
-    display: flex;
-    justify-content: space-around;
-    gap: 10px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
     margin: 15px 0;
+    padding: 0 5px;
 }
 
 .ability {
-    background: rgba(40, 40, 60, 0.8);
-    border: 2px solid #5a5a7a;
-    border-radius: 10px;
-    padding: 10px 5px;
+    background: linear-gradient(145deg, #4a4a6a, #3a3a5a);
+    border: 2px solid #6a6a8a;
+    border-radius: 8px;
+    padding: 8px 4px;
     text-align: center;
     cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    transition: all 0.2s ease;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+    min-height: 70px;
     display: flex;
-    align-items: center;
+    flex-direction: column;
     justify-content: center;
-    gap: 10px;
-    width: 100%;
-    max-width: 150px; /* Ограничиваем максимальную ширину */
+    align-items: center;
 }
 
 .ability:hover:not(.disabled) {
-    background: rgba(60, 60, 90, 0.9);
-    border-color: #7a7aaa;
+    background: linear-gradient(145deg, #5a5a7a, #4a4a6a);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.4);
 }
 
 .ability.disabled {
-    opacity: 0.5;
+    opacity: 0.4;
     cursor: not-allowed;
+    transform: none;
 }
 
 .ability-icon {
-    font-size: 20px;
-    margin-bottom: 3px;
+    font-size: 22px;
+    margin-bottom: 4px;
 }
 
 .ability-name {
-    font-size: 11px;
-    margin-bottom: 3px;
+    font-size: 10px;
+    margin-bottom: 2px;
     font-weight: bold;
+    color: #FFD700;
 }
 
 .ability-level {
-    font-size: 10px;
-    color: #FFD700;
-    margin: 2px 0;
+    font-size: 9px;
+    color: #4d9eff;
+    margin: 1px 0;
 }
 
 .ability-uses {
-    font-size: 10px;
-    color: #4d9eff;
+    font-size: 9px;
+    color: #4CAF50;
+}
+
+/* Адаптация для очень маленьких экранов */
+@media (max-width: 350px) {
+    .abilities-panel {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 6px;
+    }
+    
+    .ability {
+        padding: 6px 3px;
+        min-height: 60px;
+    }
+    
+    .ability-icon {
+        font-size: 18px;
+    }
+    
+    .ability-name {
+        font-size: 9px;
+    }
+    
+    .ability-level, .ability-uses {
+        font-size: 8px;
+    }
 }

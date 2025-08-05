@@ -110,14 +110,6 @@ class Minesweeper {
         element.addEventListener('touchmove', () => {
             clearTimeout(pressTimer);
         });
-        
-        // Для десктопа также добавляем правый клик
-        element.addEventListener('mousedown', (e) => {
-            if (e.button === 2) { // Правая кнопка мыши
-                e.preventDefault();
-                this.handleRightClick(e);
-            }
-        });
     }
     
     createAbilitiesPanel() {
@@ -399,7 +391,7 @@ class Minesweeper {
         
         // Для touch событий нужно получить координаты правильно
         let target = event.target;
-        if (event.touches) {
+        if (event.touches && event.touches.length > 0) {
             const touch = event.touches[0];
             target = document.elementFromPoint(touch.clientX, touch.clientY);
         }

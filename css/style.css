@@ -160,52 +160,19 @@ body {
 .number-7 { color: #000000; }
 .number-8 { color: #795548; }
 
-.abilities-panel {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-    margin: 15px 0;
+.stats {
+    display: flex;
+    justify-content: space-around;
+    margin: 10px 0;
+    font-size: 13px;
 }
 
-.ability {
-    background: rgba(40, 40, 60, 0.8);
-    border: 2px solid #5a5a7a;
-    border-radius: 10px;
-    padding: 10px 5px;
+.stat-item {
     text-align: center;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
-.ability:hover:not(.disabled) {
-    background: rgba(60, 60, 90, 0.9);
-    border-color: #7a7aaa;
-}
-
-.ability.disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-.ability-icon {
-    font-size: 20px;
-    margin-bottom: 3px;
-}
-
-.ability-name {
-    font-size: 11px;
-    margin-bottom: 3px;
+.stat-value {
     font-weight: bold;
-}
-
-.ability-cost {
-    font-size: 10px;
-    color: #FFD700;
-}
-
-.ability-uses {
-    font-size: 10px;
     color: #4d9eff;
 }
 
@@ -291,22 +258,6 @@ body {
     box-shadow: 0 0 20px rgba(76, 175, 80, 0.5);
 }
 
-.stats {
-    display: flex;
-    justify-content: space-around;
-    margin: 10px 0;
-    font-size: 13px;
-}
-
-.stat-item {
-    text-align: center;
-}
-
-.stat-value {
-    font-weight: bold;
-    color: #4d9eff;
-}
-
 .message {
     position: fixed;
     top: 20px;
@@ -324,45 +275,7 @@ body {
     font-size: 14px;
 }
 
-@media (max-width: 480px) {
-    .game-container {
-        padding: 10px;
-    }
-    
-    .header {
-        margin-bottom: 10px;
-    }
-    
-    .mines-counter, .timer {
-        font-size: 18px;
-        min-width: 60px;
-        padding: 5px 10px;
-    }
-    
-    .reset-button {
-        width: 45px;
-        height: 45px;
-        font-size: 22px;
-    }
-    
-    .ability {
-        padding: 8px 3px;
-    }
-    
-    .ability-icon {
-        font-size: 18px;
-    }
-    
-    .ability-name {
-        font-size: 10px;
-    }
-    
-    .ability-cost, .ability-uses {
-        font-size: 9px;
-    }
-}
-
-/* === Стили для системы уровней (добавить в конец файла) === */
+/* === Стили для системы уровней === */
 
 .level-info {
     background: rgba(40, 40, 60, 0.9);
@@ -465,5 +378,27 @@ body {
     
     .ability-level, .ability-uses {
         font-size: 8px;
+    }
+}
+
+@media (max-width: 480px) {
+    .game-container {
+        padding: 10px;
+    }
+    
+    .header {
+        margin-bottom: 10px;
+    }
+    
+    .mines-counter, .timer {
+        font-size: 18px;
+        min-width: 60px;
+        padding: 5px 10px;
+    }
+    
+    .reset-button {
+        width: 45px;
+        height: 45px;
+        font-size: 22px;
     }
 }

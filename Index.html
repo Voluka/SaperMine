@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Сапёр Майнкрафт</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="game-container">
+        <div class="header">
+            <div class="mines-counter">010</div>
+            <button class="reset-button" id="resetButton">😊</button>
+            <div class="timer">000</div>
+        </div>
+        
+        <div class="stats">
+            <div class="stat-item">
+                Очки: <span class="stat-value" id="scoreValue">0</span>
+            </div>
+            <div class="stat-item">
+                Рекорд: <span class="stat-value" id="bestScoreValue">0</span>
+            </div>
+        </div>
+        
+        <div class="abilities-panel" id="abilitiesPanel">
+            <!-- Способности будут добавлены здесь -->
+        </div>
+        
+        <div class="board" id="board"></div>
+    </div>
+
+    <script src="js/game.js"></script>
+</body>
+</html>

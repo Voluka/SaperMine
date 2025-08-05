@@ -92,8 +92,26 @@ class Minesweeper {
                 cell.dataset.row = i;
                 cell.dataset.col = j;
                 
+                // Используем touch события для лучшей совместимости с мобильными устройствами
                 cell.addEventListener('click', (e) => this.handleCellClick(e));
                 cell.addEventListener('contextmenu', (e) => this.handleRightClick(e));
+                
+                // Добавляем обработку долгого нажатия для мобильных устройств
+                let pressTimer;
+                cell.addEventListener('touchstart', (e) => {
+                    pressTimer = setTimeout(() => {
+                        e.preventDefault();
+                        this.handleRightClick(e);
+                    }, 500); // 500ms для долгого нажатия
+                });
+                
+                cell.addEventListener('touchend', () => {
+                    clearTimeout(pressTimer);
+                });
+                
+                cell.addEventListener('touchmove', () => {
+                    clearTimeout(pressTimer);
+                });
                 
                 this.boardElement.appendChild(cell);
                 this.board[i][j] = {
@@ -290,6 +308,9 @@ class Minesweeper {
     }
     
     handleCellClick(event) {
+        // Предотвращаем контекстное меню на мобильных устройствах
+        event.preventDefault();
+        
         if (this.gameOver || this.gameWon) return;
         
         const row = parseInt(event.target.dataset.row);
@@ -329,7 +350,9 @@ class Minesweeper {
     }
     
     handleRightClick(event) {
+        // Предотвращаем стандартное контекстное меню
         event.preventDefault();
+        event.stopPropagation();
         
         if (this.gameOver || this.gameWon) return;
         

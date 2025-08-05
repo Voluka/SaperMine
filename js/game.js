@@ -407,15 +407,24 @@ class Minesweeper {
         const col = parseInt(target.dataset.col);
         const cell = this.board[row][col];
         
-        if (cell.isRevealed) return;
-        
         if (cell.isFlagged) {
             cell.isFlagged = false;
-            cell.element.classList.remove('flagged');
+            // Удаляем элемент флажка
+            const flagElement = cell.element.querySelector('.flag-element');
+            if (flagElement) {
+                cell.element.removeChild(flagElement);
+            }
             this.flagsCount--;
         } else {
             cell.isFlagged = true;
-            cell.element.classList.add('flagged');
+            // Создаем элемент флажка
+            const flagElement = document.createElement('div');
+            flagElement.className = 'flag-element';
+            flagElement.textContent = '🚩';
+            flagElement.style.fontSize = '20px';
+            flagElement.style.zIndex = '3';
+            flagElement.style.pointerEvents = 'none';
+            cell.element.appendChild(flagElement);
             this.flagsCount++;
         }
         

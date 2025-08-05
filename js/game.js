@@ -92,24 +92,23 @@ class Minesweeper {
         this.createAbilitiesPanel();
     }
     
-    // Добавляем обработку долгого нажатия для мобильных устройств
     addMobileLongPress(element) {
-        let pressTimer;
-        
-        element.addEventListener('touchstart', (e) => {
-            pressTimer = setTimeout(() => {
-                e.preventDefault();
-                this.handleRightClick(e);
-            }, 500); // 500ms для долгого нажатия
-        });
-        
-        element.addEventListener('touchend', () => {
-            clearTimeout(pressTimer);
-        });
-        
-        element.addEventListener('touchmove', () => {
-            clearTimeout(pressTimer);
-        });
+    let pressTimer;
+
+    element.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        pressTimer = setTimeout(() => {
+            this.handleRightClick(e);
+        }, 500); // 500ms для долгого нажатия
+    });
+
+    element.addEventListener('touchend', () => {
+        clearTimeout(pressTimer);
+    });
+
+    element.addEventListener('touchmove', () => {
+        clearTimeout(pressTimer);
+    });
     }
     
     createAbilitiesPanel() {

@@ -3,13 +3,15 @@
     touch-action: manipulation;
 }
 
+/* === Основные стили === */
+
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     display: flex;
     flex-direction: column;
     align-items: center;
-    background: linear-gradient(rgba(26, 42, 108, 0.85), rgba(26, 42, 108, 0.85)), 
-                url('assets/background.jpg');
+    background: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)), 
+                url('assets/background.jpg'); /* Убедитесь, что путь к изображению верный */
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
@@ -79,7 +81,7 @@ body {
 .board {
     display: grid;
     grid-template-columns: repeat(10, 1fr);
-    grid-gap: 1px;
+    gap: 2px; /* Установите фиксированный зазор между клетками */
     border: 3px solid #4a4a6a;
     background: #4a4a6a;
     border-radius: 5px;
@@ -100,10 +102,25 @@ body {
     transition: all 0.2s ease;
     box-shadow: inset 2px 2px 4px rgba(0, 0, 0, 0.3);
     font-size: clamp(12px, 3vw, 18px);
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
 }
 
-.cell:hover {
-    background: linear-gradient(145deg, #7a7a9f, #5a5a7a);
+.cell::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.2);
+    transform: translateY(100%);
+    transition: transform 0.2s ease;
+}
+
+.cell:hover::before {
+    transform: translateY(0);
 }
 
 .cell.revealed {
@@ -125,7 +142,6 @@ body {
     width: 80%;
     height: 80%;
     background: 
-        linear-gradient(45deg, #000 25%, transparent 25%, transparent 75%, #000 75%),
         linear-gradient(45deg, #000 25%, transparent 25%, transparent 75%, #000 75%);
     background-size: 10px 10px;
     background-position: 0 0, 5px 5px;

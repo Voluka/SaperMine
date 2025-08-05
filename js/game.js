@@ -103,26 +103,30 @@ class Minesweeper {
         this.createAbilitiesPanel();
     }
     
-    createAbilitiesPanel() {
-        this.unlockedAbilities = this.levelSystem.getUnlockedAbilities();
+    // В методе createAbilitiesPanel() замените код на следующий:
+
+createAbilitiesPanel() {
+    this.unlockedAbilities = this.levelSystem.getUnlockedAbilities();
+    
+    this.abilitiesPanel.innerHTML = ''; // Очищаем панель способностей
+    
+    this.unlockedAbilities.forEach(ability => {
+        const abilityElement = document.createElement('div');
+        abilityElement.className = 'ability';
+        abilityElement.id = `ability-${ability.key}`;
+        abilityElement.innerHTML = `
+            <div class="ability-icon">${ability.icon}</div>
+            <div class="ability-name">${ability.name}</div>
+            <div class="ability-level">Ур. ${ability.level}</div>
+            <div class="ability-uses">Исп.: ${ability.uses}</div>
+        `;
         
-        this.unlockedAbilities.forEach(ability => {
-            const abilityElement = document.createElement('div');
-            abilityElement.className = 'ability';
-            abilityElement.id = `ability-${ability.key}`;
-            abilityElement.innerHTML = `
-                <div class="ability-icon">${ability.icon}</div>
-                <div class="ability-name">${ability.name}</div>
-                <div class="ability-level">Ур. ${ability.level}</div>
-                <div class="ability-uses">Исп.: ${ability.uses}</div>
-            `;
-            
-            abilityElement.addEventListener('click', () => this.useAbility(ability.key));
-            this.abilitiesPanel.appendChild(abilityElement);
-        });
-        
-        this.updateAbilitiesPanel();
-    }
+        abilityElement.addEventListener('click', () => this.useAbility(ability.key));
+        this.abilitiesPanel.appendChild(abilityElement);
+    });
+    
+    this.updateAbilitiesPanel();
+}
     
     updateAbilitiesPanel() {
         this.unlockedAbilities.forEach(ability => {
